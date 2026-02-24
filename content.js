@@ -28,19 +28,12 @@ function createIntentFilter() {
 
     const title = document.createElement("h1");
     title.innerText = "Was möchtest du heute hier tun?";
-    Object.assign(title.style, { 
+    Object.assign(title.style, {
         fontSize: "32px", marginBottom: "40px", fontWeight: "bold", textAlign: "center"
     });
 
-    const form = document.createElement("form");
-    form.onsubmit = (e) => {
-        e.preventDefault();
-        const query = input.value.trim();
-        if (query) {
-            window.location.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
-        }
-    };
-    Object.assign(form.style, { display: "flex", width: "100%", maxWidth: "600px" });
+    const searchContainer = document.createElement("div");
+    Object.assign(searchContainer.style, { display: "flex", width: "100%", maxWidth: "600px" });
 
     const input = document.createElement("input");
     input.type = "text";
@@ -50,23 +43,60 @@ function createIntentFilter() {
         border: "1px solid #303030", backgroundColor: "#121212", color: "white", outline: "none"
     });
 
+    const performSearch = () => {
+        const query = input.value.trim();
+        if (query) {
+            window.location.href = `https://www.youtube.com/results?search_query=${encodeURIComponent(query)}`;
+        }
+    };
+
+    // WICHTIG: Verhindert, dass YouTube Hotkeys, Enter oder ein globales Formular-Submit abfängt
+    const stopEvent = (e) => {
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+        if (e.key === "Enter" && e.type === "keydown") {
+            performSearch();
+        }
+    };
+    input.addEventListener("keydown", stopEvent, true);
+    input.addEventListener("keyup", stopEvent, true);
+    input.addEventListener("keypress", stopEvent, true);
+
+    // Swallow all clicks inside the search input too so they don't leak to YouTube's "click anywhere to play"
+    input.addEventListener("click", stopEvent, true);
+    input.addEventListener("mousedown", stopEvent, true);
+    input.addEventListener("mouseup", stopEvent, true);
+
     const button = document.createElement("button");
-    button.type = "submit";
     button.innerText = "Suchen";
     Object.assign(button.style, {
         padding: "0 30px", fontSize: "20px", borderRadius: "0 28px 28px 0",
         border: "1px solid #303030", borderLeft: "none", backgroundColor: "#333333", color: "white", cursor: "pointer", fontWeight: "bold"
     });
-    
+
     // Hover effect for button
     button.onmouseover = () => button.style.backgroundColor = "#444444";
     button.onmouseout = () => button.style.backgroundColor = "#333333";
 
-    form.appendChild(input);
-    form.appendChild(button);
+    const stopClick = (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        e.stopImmediatePropagation();
+    };
+
+    button.addEventListener("click", (e) => {
+        stopClick(e);
+        performSearch();
+    }, true);
+
+    button.addEventListener("mousedown", stopClick, true);
+    button.addEventListener("mouseup", stopClick, true);
+
+    searchContainer.appendChild(input);
+    searchContainer.appendChild(button);
     overlay.appendChild(title);
-    overlay.appendChild(form);
-    
+    overlay.appendChild(searchContainer);
+
     // Append to body as soon as possible
     if (document.body) {
         document.body.appendChild(overlay);
@@ -81,6 +111,12 @@ function createIntentFilter() {
 
 // 2. Disable Autoplay
 function disableAutoplay() {
+    // ACHTUNG: Nur auf der Video-Seite (/watch) ausführen!
+    // Wenn das Skript im "Hover-Player" (Inline Preview auf der Start/Such-Seite)
+    // auf den Autoplay-Button klickt, interpretiert YouTube das als Klick auf das Video
+    // und öffnet die Video-URL.
+    if (!window.location.pathname.startsWith("/watch")) return;
+
     // Standard Autoplay Toggle switch
     const autoplayToggle = document.querySelector(".ytp-autonav-toggle-button");
     if (autoplayToggle) {
@@ -90,7 +126,7 @@ function disableAutoplay() {
             console.log("Anti-Algo: Autoplay disabled.");
         }
     }
-    
+
     // Up-Next overlay cancel button (the countdown circle)
     const cancelBtn = document.querySelector('.ytp-autonav-endscreen-upnext-cancel-button');
     if (cancelBtn) {
@@ -115,5 +151,7 @@ setInterval(() => {
     disableAutoplay();
 }, 2000);
 
-// Try to run right away on script load
+// -------- Hover Blocker Removed --------
+// Die Funktion für die Vorschau-Wiedergabe beim Hovern (Inline Playback) wurde wieder aktiviert, 
+// da das Blockieren Fehler beim Klicken verursacht hat.
 checkIntentFilter();

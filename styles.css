@@ -52,3 +52,12 @@ ytd-guide-entry-renderer:has(a[title="Lernen"]),
 ytd-guide-entry-renderer:has(a[title="Mode & Kosmetik"]) {
     display: none !important;
 }
+
+/* 8. Inline Playback (Hover-Autoplay auf Thumbnails) komplett deaktivieren */
+ytd-video-preview,
+ytd-inline-preview-ui,
+#mouseover-overlay,
+#hover-overlays {
+    display: none !important;
+    pointer-events: none !important;
+}
