@@ -1,0 +1,54 @@
+/* 1. Startseite Feed (Home) verstecken */
+ytd-browse[page-subtype="home"] ytd-rich-grid-renderer {
+    display: none !important;
+}
+
+/* 2. Empfohlene Videos (Sidebar rechts neben dem Video) verstecken */
+#secondary,
+#related {
+    display: none !important;
+}
+
+/* 3. Shorts überall komplett ausblenden */
+ytd-rich-shelf-renderer[is-shorts],
+ytd-reel-shelf-renderer,
+yt-tab-shape[tab-title="Shorts"],
+ytd-guide-entry-renderer:has(> a[title="Shorts"]),
+ytd-mini-guide-entry-renderer[aria-label="Shorts"],
+a[href^="/shorts"],
+[title="Shorts"],
+[aria-label="Shorts"] {
+    display: none !important;
+}
+
+/* 4. Vorschläge auf dem Endscreen (wenn ein Video zu Ende ist) verstecken */
+.ytp-endscreen-content,
+.ytp-ce-video,
+.ytp-ce-channel,
+.html5-endscreen {
+    display: none !important;
+}
+
+/* 5. Kommentare ausblenden (optional, falls das auch ablenkt - kann entfernt werden wenn gewünscht) */
+ytd-comments {
+    display: none !important;
+}
+
+/* 6. Entfernt die "Mix"-Playlists, die vom Algo generiert werden */
+ytd-compact-radio-renderer {
+    display: none !important;
+}
+
+/* 7. Entdecken-Sektionen und Menüs komplett ausblenden */
+ytd-guide-entry-renderer:has(a[href^="/feed/explore"]),
+ytd-guide-entry-renderer:has(a[href^="/feed/trending"]),
+ytd-guide-entry-renderer:has(a[href^="/gaming"]),
+ytd-guide-entry-renderer:has(a[href^="/podcasts"]),
+ytd-guide-entry-renderer:has(a[title="Musik"]),
+ytd-guide-entry-renderer:has(a[title="Gaming"]),
+ytd-guide-entry-renderer:has(a[title="Neuigkeiten"]),
+ytd-guide-entry-renderer:has(a[title="Sport"]),
+ytd-guide-entry-renderer:has(a[title="Lernen"]),
+ytd-guide-entry-renderer:has(a[title="Mode & Kosmetik"]) {
+    display: none !important;
+}
