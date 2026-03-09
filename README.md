@@ -46,9 +46,6 @@ Currently, this extension is loaded manually via Developer Mode.
 4. Select the `manifest.json` file inside the `youtube-de-algo-ext` folder.
 *(Hinweis: Temporäre Add-ons in Firefox werden nach einem Neustart des Browsers entfernt, bis sie offiziell signiert sind.)*
 
-### Aktivierung
-**6. Öffne YouTube und genieße deine fokussierte, ungestörte Erfahrung!**
-
 ## Privacy
 
 This extension runs completely locally. It contains no tracking, no analytics, and does not send your data anywhere. It only uses simple CSS to hide elements and basic JavaScript to manage the Intent Filter and disable Autoplay. 
