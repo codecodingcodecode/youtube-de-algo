@@ -2,29 +2,51 @@
 
 // 1. Intent Filter (Achtsamkeits-Popup)
 function checkIntentFilter() {
-    // Only show on root homepage, not on search or video pages
     if (window.location.pathname === "/" && window.location.search === "") {
-        if (!document.getElementById("anti-algo-intent-filter")) {
+        if (!document.getElementById("anti-algo-dialog")) {
             createIntentFilter();
         } else {
-            document.getElementById("anti-algo-intent-filter").style.display = "flex";
+            const dialog = document.getElementById("anti-algo-dialog");
+            if (!dialog.open) dialog.showModal();
+            const input = document.getElementById("anti-algo-search-input");
+            if (input) input.focus();
         }
     } else {
-        if (document.getElementById("anti-algo-intent-filter")) {
-            document.getElementById("anti-algo-intent-filter").style.display = "none";
+        const dialog = document.getElementById("anti-algo-dialog");
+        if (dialog && dialog.open) {
+            dialog.close();
         }
     }
 }
 
 function createIntentFilter() {
-    const overlay = document.createElement("div");
-    overlay.id = "anti-algo-intent-filter";
-    Object.assign(overlay.style, {
+    // Utilize native HTML5 Dialog for maximum focus trapping and isolation
+    const dialog = document.createElement("dialog");
+    dialog.id = "anti-algo-dialog";
+
+    // Reset native dialog styles to match our full-screen overlay
+    Object.assign(dialog.style, {
         position: "fixed", top: "0", left: "0", width: "100%", height: "100%",
-        backgroundColor: "rgba(15, 15, 15, 0.98)", zIndex: "9999999",
+        maxWidth: "100%", maxHeight: "100%", margin: "0", padding: "0",
+        border: "none", backgroundColor: "rgba(15, 15, 15, 0.98)", zIndex: "2147483647",
         display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center",
         color: "white", fontFamily: "Roboto, Arial, sans-serif"
     });
+
+    const style = document.createElement("style");
+    style.textContent = `
+        #anti-algo-dialog::backdrop {
+            background-color: rgba(15, 15, 15, 0.98);
+        }
+        /* Override display:none when open since we use flex */
+        #anti-algo-dialog[open] {
+            display: flex;
+        }
+        #anti-algo-dialog:not([open]) {
+            display: none;
+        }
+    `;
+    document.head.appendChild(style);
 
     const title = document.createElement("h1");
     title.innerText = "Was möchtest du heute hier tun?";
@@ -32,11 +54,13 @@ function createIntentFilter() {
         fontSize: "32px", marginBottom: "40px", fontWeight: "bold", textAlign: "center"
     });
 
-    const searchContainer = document.createElement("div");
+    const searchContainer = document.createElement("form");
     Object.assign(searchContainer.style, { display: "flex", width: "100%", maxWidth: "600px" });
 
     const input = document.createElement("input");
+    input.id = "anti-algo-search-input";
     input.type = "text";
+    input.autocomplete = "off";
     input.placeholder = "Bewusst suchen...";
     Object.assign(input.style, {
         flex: "1", padding: "18px 24px", fontSize: "20px", borderRadius: "28px 0 0 28px",
@@ -50,74 +74,61 @@ function createIntentFilter() {
         }
     };
 
-    // WICHTIG: Verhindert, dass YouTube Hotkeys, Enter oder ein globales Formular-Submit abfängt
-    const stopEvent = (e) => {
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-        if (e.key === "Enter" && e.type === "keydown") {
-            performSearch();
-        }
-    };
-    input.addEventListener("keydown", stopEvent, true);
-    input.addEventListener("keyup", stopEvent, true);
-    input.addEventListener("keypress", stopEvent, true);
-
-    // Swallow all clicks inside the search input too so they don't leak to YouTube's "click anywhere to play"
-    input.addEventListener("click", stopEvent, true);
-    input.addEventListener("mousedown", stopEvent, true);
-    input.addEventListener("mouseup", stopEvent, true);
+    searchContainer.addEventListener("submit", (e) => {
+        e.preventDefault();
+        performSearch();
+    });
 
     const button = document.createElement("button");
+    button.type = "submit";
     button.innerText = "Suchen";
     Object.assign(button.style, {
         padding: "0 30px", fontSize: "20px", borderRadius: "0 28px 28px 0",
         border: "1px solid #303030", borderLeft: "none", backgroundColor: "#333333", color: "white", cursor: "pointer", fontWeight: "bold"
     });
 
-    // Hover effect for button
     button.onmouseover = () => button.style.backgroundColor = "#444444";
     button.onmouseout = () => button.style.backgroundColor = "#333333";
 
-    const stopClick = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        e.stopImmediatePropagation();
-    };
-
-    button.addEventListener("click", (e) => {
-        stopClick(e);
-        performSearch();
-    }, true);
-
-    button.addEventListener("mousedown", stopClick, true);
-    button.addEventListener("mouseup", stopClick, true);
-
     searchContainer.appendChild(input);
     searchContainer.appendChild(button);
-    overlay.appendChild(title);
-    overlay.appendChild(searchContainer);
+    dialog.appendChild(title);
+    dialog.appendChild(searchContainer);
 
-    // Append to body as soon as possible
-    if (document.body) {
-        document.body.appendChild(overlay);
-        input.focus();
-    } else {
-        document.addEventListener("DOMContentLoaded", () => {
-            document.body.appendChild(overlay);
+    // Stop events from bubbling out of the dialog to YouTube's body listeners
+    const stopGlobalLeak = (e) => e.stopPropagation();
+    dialog.addEventListener("keydown", stopGlobalLeak);
+    dialog.addEventListener("keyup", stopGlobalLeak);
+    dialog.addEventListener("keypress", stopGlobalLeak);
+    dialog.addEventListener("click", stopGlobalLeak);
+
+    // Click on dialog background refocuses the input
+    dialog.addEventListener("click", (e) => {
+        if (e.target === dialog) {
             input.focus();
-        });
+        }
+    });
+
+    // We must wait for the body to be completely available before appending a dialog
+    const initDialog = () => {
+        if (!document.getElementById("anti-algo-dialog")) {
+            document.body.appendChild(dialog);
+            dialog.showModal();
+            setTimeout(() => input.focus(), 100);
+        }
+    };
+
+    if (document.body) {
+        initDialog();
+    } else {
+        document.addEventListener("DOMContentLoaded", initDialog);
     }
 }
 
 // 2. Disable Autoplay
 function disableAutoplay() {
-    // ACHTUNG: Nur auf der Video-Seite (/watch) ausführen!
-    // Wenn das Skript im "Hover-Player" (Inline Preview auf der Start/Such-Seite)
-    // auf den Autoplay-Button klickt, interpretiert YouTube das als Klick auf das Video
-    // und öffnet die Video-URL.
     if (!window.location.pathname.startsWith("/watch")) return;
 
-    // Standard Autoplay Toggle switch
     const autoplayToggle = document.querySelector(".ytp-autonav-toggle-button");
     if (autoplayToggle) {
         const isAutoplayOn = autoplayToggle.getAttribute("aria-checked") === "true";
@@ -127,7 +138,6 @@ function disableAutoplay() {
         }
     }
 
-    // Up-Next overlay cancel button (the countdown circle)
     const cancelBtn = document.querySelector('.ytp-autonav-endscreen-upnext-cancel-button');
     if (cancelBtn) {
         cancelBtn.click();
@@ -136,22 +146,15 @@ function disableAutoplay() {
 }
 
 // -------- Initialization & Event Listeners --------
-
-// YouTube uses an internal router (SPF / Polymer), so we must listen for its custom navigation events
 document.addEventListener("yt-navigate-finish", () => {
     checkIntentFilter();
-    setTimeout(disableAutoplay, 1000); // Check quickly after load
-    setTimeout(disableAutoplay, 3000); // Check again to be safe
+    setTimeout(disableAutoplay, 1000);
+    setTimeout(disableAutoplay, 3000);
 });
 
-// Run immediately via interval just to be absolutely sure it stays active 
-// (e.g. if you toggle Autoplay manually, it turns it right back off)
 setInterval(() => {
     checkIntentFilter();
     disableAutoplay();
 }, 2000);
 
-// -------- Hover Blocker Removed --------
-// Die Funktion für die Vorschau-Wiedergabe beim Hovern (Inline Playback) wurde wieder aktiviert, 
-// da das Blockieren Fehler beim Klicken verursacht hat.
 checkIntentFilter();

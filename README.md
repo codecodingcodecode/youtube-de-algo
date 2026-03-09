@@ -25,10 +25,11 @@ You are forced to type exactly what you are looking for into a dedicated search 
 * **Aggressive Autoplay Disabler**: Actively clicks off the "Autoplay" toggle and cancels the "Up Next" countdown timer.
 * **No "Discover" Temptations**: Removes algorithmic side menus like Trending, Music, Gaming, and Podcasts.
 
-## Installation (Chrome / Brave / Edge)
+## Installation
 
 Currently, this extension is loaded manually via Developer Mode. 
 
+### Chrome / Brave / Edge
 1. Download or clone this repository to your computer.
 2. Open your browser and navigate to the Extensions page:
    - Chrome: `chrome://extensions/`
@@ -37,7 +38,16 @@ Currently, this extension is loaded manually via Developer Mode.
 3. Toggle on **Developer mode** (usually in the top right corner).
 4. Click the **Load unpacked** (Entpackte Erweiterung laden) button in the top left.
 5. Select the `youtube-de-algo-ext` folder you downloaded.
-6. Open YouTube and enjoy your focused, algorithm-free experience!
+
+### Firefox
+1. Download or clone this repository to your computer.
+2. Open Firefox and navigate to `about:debugging#/runtime/this-firefox`.
+3. Click on **Load Temporary Add-on...** (Temporäres Add-on laden...).
+4. Select the `manifest.json` file inside the `youtube-de-algo-ext` folder.
+*(Hinweis: Temporäre Add-ons in Firefox werden nach einem Neustart des Browsers entfernt, bis sie offiziell signiert sind.)*
+
+### Aktivierung
+**6. Öffne YouTube und genieße deine fokussierte, ungestörte Erfahrung!**
 
 ## Privacy
 

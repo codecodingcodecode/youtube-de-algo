@@ -3,6 +3,12 @@
     "name": "YouTube De-Algo",
     "version": "1.0",
     "description": "Blockiert den YouTube Algorithmus (Startseite, Empfehlungen, Shorts) und erlaubt nur noch gezielte Suchen.",
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "youtube-de-algo@local.add-on",
+            "strict_min_version": "121.0"
+        }
+    },
     "content_scripts": [
         {
             "matches": [
